@@ -8,26 +8,41 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: #f4f7f6; color: #333; padding: 20px; }
         .container { max-width: 1100px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
-        h1 { text-align: center; color: #2c3e50; margin-bottom: 20px; }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+        h1 { color: #2c3e50; font-size: 24px; }
+        
+        /* Form nhập */
         .form-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; background: #f8f9fa; padding: 18px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e9ecef; }
         .input-group { display: flex; flex-direction: column; }
         .input-group label { font-size: 13px; font-weight: 600; margin-bottom: 5px; color: #495057; }
         .input-group input { padding: 8px 10px; border: 1px solid #ced4da; border-radius: 6px; font-size: 14px; outline: none; }
+        
         .btn-group { display: flex; gap: 10px; margin-bottom: 20px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
         button { padding: 9px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; transition: all 0.2s; }
+        
+        .btn-admin { background-color: #3498db; color: white; }
+        .btn-logout { background-color: #7f8c8d; color: white; }
         .btn-add { background-color: #27ae60; color: white; }
         .btn-clear { background-color: #e74c3c; color: white; }
+        .btn-delete { background-color: #ff4d4d; color: white; padding: 5px 10px; font-size: 12px; border-radius: 4px; }
+        
+        /* Bảng */
         .table-responsive { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th, td { padding: 12px 10px; text-align: center; border-bottom: 1px solid #e9ecef; font-size: 14px; }
         th { background-color: #34495e; color: white; }
+        
+        /* Badge xếp loại */
         .badge { padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; color: white; }
         .badge-xuatsac { background-color: #9b59b6; }
         .badge-gioi { background-color: #27ae60; }
         .badge-kha { background-color: #2980b9; }
         .badge-tb { background-color: #f39c12; }
         .badge-yeu { background-color: #e74c3c; }
-        .btn-delete { background-color: #ff4d4d; color: white; padding: 5px 10px; font-size: 12px; border-radius: 4px; }
+
+        /* Mặc định ẩn phần quyền Admin */
+        .admin-only { display: none !important; }
     </style>
 
     <!-- Thư viện Firebase SDK -->
@@ -37,9 +52,16 @@
 <body>
 
 <div class="container">
-    <h1>SỔ GHI ĐIỂM LỚP HỌC (ONLINE)</h1>
+    <div class="header">
+        <h1>SỔ GHI ĐIỂM LỚP HỌC (ONLINE)</h1>
+        <div>
+            <button id="btnLogin" class="btn-admin" onclick="toggleAdmin()">🔒 Đăng nhập Admin</button>
+            <button id="btnLogout" class="btn-logout admin-only" onclick="logoutAdmin()">🔓 Đăng xuất Admin</button>
+        </div>
+    </div>
 
-    <form id="scoreForm" onsubmit="addStudent(event)">
+    <!-- Form Nhập Liệu (Chỉ Admin mới thấy) -->
+    <form id="scoreForm" class="admin-only" onsubmit="addStudent(event)">
         <div class="form-container">
             <div class="input-group" style="grid-column: span 2;">
                 <label for="name">Họ và Tên</label>
@@ -58,6 +80,7 @@
         </div>
     </form>
 
+    <!-- Bảng Điểm -->
     <div class="table-responsive">
         <table>
             <thead>
@@ -67,7 +90,7 @@
                     <th>Toán</th><th>Văn</th><th>Anh</th><th>Lý</th><th>Hóa</th>
                     <th>ĐTB</th>
                     <th>Xếp Loại</th>
-                    <th>Thao tác</th>
+                    <th class="admin-only">Thao tác</th>
                 </tr>
             </thead>
             <tbody id="studentList">
@@ -78,7 +101,11 @@
 </div>
 
 <script>
-    // Cấu hình Firebase từ ảnh của bạn
+    // MẬT KHẨU ADMIN (Bạn có thể đổi "123456" thành mật khẩu riêng của bạn)
+    const ADMIN_PASSWORD = "lopcohuong11a10"; 
+    let isAdmin = false;
+
+    // Cấu hình Firebase
     const firebaseConfig = {
         apiKey: "AIzaSyDyDSa7y_lMhICKgzkeVPwIVxRBjZwIPQQ",
         authDomain: "a10-224e5.firebaseapp.com",
@@ -95,6 +122,43 @@
     const database = firebase.database();
     const studentsRef = database.ref('students');
 
+    // Xử lý Đăng nhập Admin
+    function toggleAdmin() {
+        const pass = prompt("Nhập mật khẩu Admin để chỉnh sửa điểm:");
+        if (pass === ADMIN_PASSWORD) {
+            isAdmin = true;
+            updateAdminUI();
+            alert("Đăng nhập thành công! Bạn có thể thêm/xóa điểm.");
+        } else if (pass !== null) {
+            alert("Sai mật khẩu!");
+        }
+    }
+
+    // Đăng xuất Admin
+    function logoutAdmin() {
+        isAdmin = false;
+        updateAdminUI();
+    }
+
+    // Cập nhật Giao diện theo Quyền Admin
+    function updateAdminUI() {
+        const adminElements = document.querySelectorAll('.admin-only');
+        const btnLogin = document.getElementById('btnLogin');
+        const btnLogout = document.getElementById('btnLogout');
+
+        if (isAdmin) {
+            adminElements.forEach(el => el.classList.remove('admin-only'));
+            btnLogin.style.display = 'none';
+            btnLogout.classList.remove('admin-only');
+        } else {
+            adminElements.forEach(el => el.classList.add('admin-only'));
+            btnLogin.style.display = 'inline-block';
+            btnLogout.classList.add('admin-only');
+        }
+        // Load lại bảng điểm để ẩn/hiện cột Thao tác
+        studentsRef.once('value', snapshot => renderTable(snapshot.val()));
+    }
+
     // Xếp loại
     function calculateGrade(toan, van, anh, ly, hoa) {
         let avg = (toan + van + anh + ly + hoa) / 5;
@@ -107,9 +171,11 @@
         return { avg: avg.toFixed(1), rank, badgeClass };
     }
 
-    // Thêm học sinh lên Firebase Realtime Database
+    // Thêm học sinh
     function addStudent(event) {
         event.preventDefault();
+        if (!isAdmin) return;
+
         const newStudent = {
             name: document.getElementById('name').value.trim(),
             toan: parseFloat(document.getElementById('toan').value),
@@ -124,6 +190,7 @@
 
     // Xóa học sinh
     function deleteStudent(key) {
+        if (!isAdmin) return;
         if (confirm('Bạn có chắc muốn xóa học sinh này?')) {
             studentsRef.child(key).remove();
         }
@@ -131,19 +198,19 @@
 
     // Xóa tất cả
     function clearAll() {
-        if (confirm('CẢNH BÁO: Thao tác này sẽ xóa sạch dữ liệu trên hệ thống!')) {
+        if (!isAdmin) return;
+        if (confirm('CẢNH BÁO: Thao tác này sẽ xóa sạch dữ liệu!')) {
             studentsRef.remove();
         }
     }
 
-    // Lắng nghe dữ liệu trực tiếp (Realtime)
-    studentsRef.on('value', (snapshot) => {
-        const data = snapshot.val();
+    // Hiển thị bảng dữ liệu
+    function renderTable(data) {
         const tbody = document.getElementById('studentList');
         tbody.innerHTML = '';
 
         if (!data) {
-            tbody.innerHTML = '<tr><td colspan="10">Chưa có dữ liệu học sinh nào</td></tr>';
+            tbody.innerHTML = `<tr><td colspan="${isAdmin ? 10 : 9}">Chưa có dữ liệu học sinh nào</td></tr>`;
             return;
         }
 
@@ -151,6 +218,9 @@
         for (let key in data) {
             const s = data[key];
             const { avg, rank, badgeClass } = calculateGrade(s.toan, s.van, s.anh, s.ly, s.hoa);
+            
+            let deleteBtnHtml = isAdmin ? `<td><button class="btn-delete" onclick="deleteStudent('${key}')">Xóa</button></td>` : '';
+
             const row = `
                 <tr>
                     <td>${index++}</td>
@@ -158,11 +228,16 @@
                     <td>${s.toan}</td><td>${s.van}</td><td>${s.anh}</td><td>${s.ly}</td><td>${s.hoa}</td>
                     <td style="font-weight: bold;">${avg}</td>
                     <td><span class="badge ${badgeClass}">${rank}</span></td>
-                    <td><button class="btn-delete" onclick="deleteStudent('${key}')">Xóa</button></td>
+                    ${deleteBtnHtml}
                 </tr>
             `;
             tbody.innerHTML += row;
         }
+    }
+
+    // Lắng nghe dữ liệu trực tiếp Realtime
+    studentsRef.on('value', (snapshot) => {
+        renderTable(snapshot.val());
     });
 </script>
 

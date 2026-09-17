@@ -30,7 +30,7 @@
         .btn-delete { background-color: #ff4d4d; color: white; padding: 5px 10px; font-size: 12px; border-radius: 4px; }
     </style>
 
-    <!-- Tải thư viện Firebase SDK -->
+    <!-- Thư viện Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 </head>
@@ -78,15 +78,16 @@
 </div>
 
 <script>
-    // ⚠️ THAY THẾ ĐOẠN NÀY BẰNG CẤU HÌNH FIREBASE CỦA BẠN
+    // Cấu hình Firebase từ ảnh của bạn
     const firebaseConfig = {
-        apiKey: "YOUR_API_KEY",
-        authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-        databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
-        projectId: "YOUR_PROJECT_ID",
-        storageBucket: "YOUR_PROJECT_ID.appspot.com",
-        messagingSenderId: "YOUR_SENDER_ID",
-        appId: "YOUR_APP_ID"
+        apiKey: "AIzaSyDyDSa7y_lMhICKgzkeVPwIVxRBjZwIPQQ",
+        authDomain: "a10-224e5.firebaseapp.com",
+        databaseURL: "https://a10-224e5-default-rtdb.firebaseio.com",
+        projectId: "a10-224e5",
+        storageBucket: "a10-224e5.firebasestorage.app",
+        messagingSenderId: "87831248622",
+        appId: "1:87831248622:web:ff9dcfd156f8f2ff07fdff",
+        measurementId: "G-CC8EG3N1J0"
     };
 
     // Khởi tạo Firebase
@@ -106,7 +107,7 @@
         return { avg: avg.toFixed(1), rank, badgeClass };
     }
 
-    // Thêm học sinh lên Firebase
+    // Thêm học sinh lên Firebase Realtime Database
     function addStudent(event) {
         event.preventDefault();
         const newStudent = {
@@ -123,19 +124,19 @@
 
     // Xóa học sinh
     function deleteStudent(key) {
-        if (confirm('Bạn có chắc muốn xóa?')) {
+        if (confirm('Bạn có chắc muốn xóa học sinh này?')) {
             studentsRef.child(key).remove();
         }
     }
 
     // Xóa tất cả
     function clearAll() {
-        if (confirm('CẢNH BÁO: Thao tác này sẽ xóa sạch dữ liệu trên Server!')) {
+        if (confirm('CẢNH BÁO: Thao tác này sẽ xóa sạch dữ liệu trên hệ thống!')) {
             studentsRef.remove();
         }
     }
 
-    // Lắng nghe dữ liệu thay đổi REALTIME từ Firebase
+    // Lắng nghe dữ liệu trực tiếp (Realtime)
     studentsRef.on('value', (snapshot) => {
         const data = snapshot.val();
         const tbody = document.getElementById('studentList');

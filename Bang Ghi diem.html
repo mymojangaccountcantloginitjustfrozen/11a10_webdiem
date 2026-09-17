@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sổ Ghi Điểm Lớp Học</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f4f7f6;
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        /* Form nhập */
+        .form-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            background: #f8f9fa;
+            padding: 18px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #e9ecef;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-group label {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #495057;
+        }
+
+        .input-group input {
+            padding: 8px 10px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .input-group input:focus {
+            border-color: #4a90e2;
+            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 9px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-add { background-color: #27ae60; color: white; }
+        .btn-add:hover { background-color: #219150; }
+
+        .btn-export { background-color: #2980b9; color: white; }
+        .btn-export:hover { background-color: #1c638e; }
+
+        .btn-clear { background-color: #e74c3c; color: white; }
+        .btn-clear:hover { background-color: #c0392b; }
+
+        .search-box {
+            padding: 8px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            width: 250px;
+        }
+
+        /* Bảng hiển thị */
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            padding: 12px 10px;
+            text-align: center;
+            border-bottom: 1px solid #e9ecef;
+            font-size: 14px;
+        }
+
+        th {
+            background-color: #34495e;
+            color: white;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        /* Badge xếp loại */
+        .badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+            display: inline-block;
+        }
+
+        .badge-x xuatsac { background-color: #9b59b6; }
+        .badge-gioi { background-color: #27ae60; }
+        .badge-kha { background-color: #2980b9; }
+        .badge-tb { background-color: #f39c12; }
+        .badge-yeu { background-color: #e74c3c; }
+
+        .btn-delete {
+            background-color: #ff4d4d;
+            color: white;
+            padding: 5px 10px;
+            font-size: 12px;
+            border-radius: 4px;
+        }
+
+        .btn-delete:hover {
+            background-color: #cc0000;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>SỔ GHI ĐIỂM HỌC SINH</h1>
+
+    <!-- Form Nhập Liệu -->
+    <form id="scoreForm" onsubmit="addStudent(event)">
+        <div class="form-container">
+            <div class="input-group" style="grid-column: span 2;">
+                <label for="name">Họ và Tên</label>
+                <input type="text" id="name" required placeholder="Nguyễn Văn A">
+            </div>
+            <div class="input-group">
+                <label for="toan">Toán</label>
+                <input type="number" id="toan" min="0" max="10" step="0.1" required>
+            </div>
+            <div class="input-group">
+                <label for="van">Văn</label>
+                <input type="number" id="van" min="0" max="10" step="0.1" required>
+            </div>
+            <div class="input-group">
+                <label for="anh">Tiếng Anh</label>
+                <input type="number" id="anh" min="0" max="10" step="0.1" required>
+            </div>
+            <div class="input-group">
+                <label for="ly">Vật Lý</label>
+                <input type="number" id="ly" min="0" max="10" step="0.1" required>
+            </div>
+            <div class="input-group">
+                <label for="hoa">Hóa Học</label>
+                <input type="number" id="hoa" min="0" max="10" step="0.1" required>
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <button type="submit" class="btn-add">+ Thêm Học Sinh</button>
+            <input type="text" id="search" class="search-box" placeholder="Tìm kiếm tên học sinh..." onkeyup="filterStudents()">
+            <div>
+                <button type="button" class="btn-export" onclick="exportCSV()">Xuất file Excel/CSV</button>
+                <button type="button" class="btn-clear" onclick="clearAll()">Xóa toàn bộ</button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Bảng Điểm -->
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>STT</th>
+                    <th>Họ và Tên</th>
+                    <th>Toán</th>
+                    <th>Văn</th>
+                    <th>Anh</th>
+                    <th>Lý</th>
+                    <th>Hóa</th>
+                    <th>ĐTB</th>
+                    <th>Xếp Loại</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody id="studentList">
+                <!-- Dữ liệu học sinh sẽ chèn vào đây -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    let students = JSON.parse(localStorage.getItem('studentsData')) || [];
+
+    // Hiển thị danh sách ban đầu
+    document.addEventListener('DOMContentLoaded', renderStudents);
+
+    // Tính điểm trung bình và xếp loại
+    function calculateGrade(toan, van, anh, ly, hoa) {
+        let avg = (toan + van + anh + ly + hoa) / 5;
+        let rank = '';
+        let badgeClass = '';
+
+        if (avg >= 9.0) { rank = 'Xuất sắc'; badgeClass = 'badge-xuatsac'; }
+        else if (avg >= 8.0) { rank = 'Giỏi'; badgeClass = 'badge-gioi'; }
+        else if (avg >= 6.5) { rank = 'Khá'; badgeClass = 'badge-kha'; }
+        else if (avg >= 5.0) { rank = 'Trung bình'; badgeClass = 'badge-tb'; }
+        else { rank = 'Yếu'; badgeClass = 'badge-yeu'; }
+
+        return { avg: avg.toFixed(1), rank, badgeClass };
+    }
+
+    // Thêm học sinh
+    function addStudent(event) {
+        event.preventDefault();
+
+        const name = document.getElementById('name').value.trim();
+        const toan = parseFloat(document.getElementById('toan').value);
+        const van = parseFloat(document.getElementById('van').value);
+        const anh = parseFloat(document.getElementById('anh').value);
+        const ly = parseFloat(document.getElementById('ly').value);
+        const hoa = parseFloat(document.getElementById('hoa').value);
+
+        const student = { id: Date.now(), name, toan, van, anh, ly, hoa };
+
+        students.push(student);
+        saveAndRender();
+        document.getElementById('scoreForm').reset();
+    }
+
+    // Xóa học sinh
+    function deleteStudent(id) {
+        if (confirm('Bạn có chắc chắn muốn xóa học sinh này không?')) {
+            students = students.filter(s => s.id !== id);
+            saveAndRender();
+        }
+    }
+
+    // Xóa toàn bộ
+    function clearAll() {
+        if (confirm('CẢNH BÁO: Thao tác này sẽ xóa toàn bộ danh sách điểm!')) {
+            students = [];
+            saveAndRender();
+        }
+    }
+
+    // Lưu vào LocalStorage và Render
+    function saveAndRender() {
+        localStorage.setItem('studentsData', JSON.stringify(students));
+        renderStudents();
+    }
+
+    // Hiển thị bảng
+    function renderStudents(data = students) {
+        const tbody = document.getElementById('studentList');
+        tbody.innerHTML = '';
+
+        if (data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="10">Chưa có dữ liệu học sinh</td></tr>';
+            return;
+        }
+
+        data.forEach((s, index) => {
+            const { avg, rank, badgeClass } = calculateGrade(s.toan, s.van, s.anh, s.ly, s.hoa);
+            const row = `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td style="text-align: left; font-weight: 600;">${s.name}</td>
+                    <td>${s.toan}</td>
+                    <td>${s.van}</td>
+                    <td>${s.anh}</td>
+                    <td>${s.ly}</td>
+                    <td>${s.hoa}</td>
+                    <td style="font-weight: bold; color: #2c3e50;">${avg}</td>
+                    <td><span class="badge ${badgeClass}">${rank}</span></td>
+                    <td><button class="btn-delete" onclick="deleteStudent(${s.id})">Xóa</button></td>
+                </tr>
+            `;
+            tbody.innerHTML += row;
+        });
+    }
+
+    // Tìm kiếm học sinh
+    function filterStudents() {
+        const keyword = document.getElementById('search').value.toLowerCase();
+        const filtered = students.filter(s => s.name.toLowerCase().includes(keyword));
+        renderStudents(filtered);
+    }
+
+    // Xuất file CSV (mở bằng Excel)
+    function exportCSV() {
+        if (students.length === 0) {
+            alert('Không có dữ liệu để xuất!');
+            return;
+        }
+
+        let csvContent = "\uFEFFSTT,Họ và Tên,Toán,Văn,Anh,Lý,Hóa,ĐTB,Xếp Loại\n";
+
+        students.forEach((s, i) => {
+            const { avg, rank } = calculateGrade(s.toan, s.van, s.anh, s.ly, s.hoa);
+            csvContent += `${i + 1},"${s.name}",${s.toan},${s.van},${s.anh},${s.ly},${s.hoa},${avg},"${rank}"\n`;
+        });
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.setAttribute('download', 'Bang_Diem_Lop_Hoc.csv');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+</script>
+
+</body>
+</html>
